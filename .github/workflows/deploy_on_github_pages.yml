@@ -1,0 +1,39 @@
+name: Build & Deploy Flutter
+
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+
+  build-and-deploy:
+    name: 'Build & Deploy web app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 'Install Flutter and Dart SDK'
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.22.0
+          cache: true
+
+      - name: 'Flutter enable Web'
+        run: flutter config --enable-web
+
+      - name: 'Get dependencies'
+        run: flutter pub get
+        working-directory: flutter-main
+
+      - name: 'Build web app'
+        run: |
+          cd flutter-main
+          flutter build web --web-renderer=canvaskit --base-href='/STWareIDEWebsite/' --release
+      
+      - name: 'Deploy web app'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: flutter-main/build/web
